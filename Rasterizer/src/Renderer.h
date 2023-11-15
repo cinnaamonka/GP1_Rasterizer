@@ -35,8 +35,7 @@ namespace dae
 		void Render_W2_Part1();
 
 		bool SaveBufferToImage() const;
-
-		void VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const;
+		void VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh>& meshes_out) const;
 		Vector2 ConvertNDCtoScreen(const Vector3& ndc, int screenWidth, int screenHeight)const;
 		bool IsPixelInsideTriangle(const Vector2& pixel, const Vector2& v0, const Vector2& v1, const Vector2& v2);
 		

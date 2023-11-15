@@ -121,7 +121,7 @@ void Renderer::Render_W1_Part2()
 	std::vector<Vertex> vertices_screen;
 
 
-	VertexTransformationFunction(vertices_world, vertices_screen);
+	//VertexTransformationFunction(vertices_world, vertices_screen);
 
 
 	ColorRGB finalColor;
@@ -170,7 +170,7 @@ void Renderer::Render_W1_Part3()
 	std::vector<Vertex> vertices_screen;
 
 
-	VertexTransformationFunction(vertices_world, vertices_screen);
+	//VertexTransformationFunction(vertices_world, vertices_screen);
 
 
 	ColorRGB finalColor;
@@ -243,7 +243,7 @@ void Renderer::Render_W1_Part4()
 
 	std::vector<Vertex> vertices_screen;
 
-	VertexTransformationFunction(vertices_world, vertices_screen);
+	///VertexTransformationFunction(vertices_world, vertices_screen);
 
 	// depth buffer is initialized with the maximum value of float
 	std::fill(m_pDepthBuffer.begin(), m_pDepthBuffer.end(), std::numeric_limits<float>::max());
@@ -385,11 +385,11 @@ void Renderer::Render_W2_Part1()
 			PrimitiveTopology::TriangleStrip
 		}
 	};
-	std::vector<Vertex> vertices_screen;
+	std::vector<Mesh> meshes_screen;
 	m_Meshes.push_back(meshes_worldList[0]);
 	m_Meshes.push_back(meshes_worldStrip[0]);
 
-	VertexTransformationFunction(m_Meshes[1].vertices, vertices_screen);
+	VertexTransformationFunction(m_Meshes, meshes_screen);
 
 
 	// depth buffer is initialized with the maximum value of float
@@ -407,27 +407,27 @@ void Renderer::Render_W2_Part1()
 		{
 			currentTriangle =
 			{
-				vertices_screen[m_Meshes[1].indices[i]],
-				vertices_screen[m_Meshes[1].indices[i + 1]],
-				vertices_screen[m_Meshes[1].indices[i + 2]]
+				meshes_screen[1].vertices[m_Meshes[1].indices[i]],
+				meshes_screen[1].vertices[m_Meshes[1].indices[i + 1]],
+				meshes_screen[1].vertices[m_Meshes[1].indices[i + 2]]
 			};
 		}
 		else if(i % 2 == 0)
 		{
 			currentTriangle =
 			{
-				vertices_screen[m_Meshes[1].indices[i]],
-				vertices_screen[m_Meshes[1].indices[i + 1]],
-				vertices_screen[m_Meshes[1].indices[i + 2]]
+				meshes_screen[1].vertices[m_Meshes[1].indices[i]],
+				meshes_screen[1].vertices[m_Meshes[1].indices[i + 1]],
+				meshes_screen[1].vertices[m_Meshes[1].indices[i + 2]]
 			};
 		}
 		else
 		{
 			currentTriangle =
 			{
-				vertices_screen[m_Meshes[1].indices[i]],
-				vertices_screen[m_Meshes[1].indices[i + 2]],
-				vertices_screen[m_Meshes[1].indices[i + 1]]
+				meshes_screen[1].vertices[m_Meshes[1].indices[i]],
+				meshes_screen[1].vertices[m_Meshes[1].indices[i + 2]],
+				meshes_screen[1].vertices[m_Meshes[1].indices[i + 1]]
 			};
 		}
 
@@ -502,33 +502,44 @@ void Renderer::Render_W2_Part1()
 	SDL_UpdateWindowSurface(m_pWindow);
 }
 
-void Renderer::VertexTransformationFunction(const std::vector<Vertex>& vertices_in, std::vector<Vertex>& vertices_out) const
+void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh>& meshes_out) const
 {
-	for (const auto& vertex : vertices_in)
+	for (int i = 0; i < meshes_in.size(); i++)
 	{
-		Vertex newVertex
+		std::vector<Vertex> vertices_out;
+
+		for (const auto& vertex : meshes_in[i].vertices)
 		{
-			vertex.position,
-			vertex.color
+			Vertex newVertex
+			{
+				vertex.position,
+				vertex.color
+			};
+
+			newVertex.position = m_Camera.invViewMatrix.TransformPoint(newVertex.position);
+
+			//positive Z-axis is pointing into the screen
+			newVertex.position.x = newVertex.position.x / newVertex.position.z;
+			newVertex.position.y = newVertex.position.y / newVertex.position.z;
+
+			newVertex.position.x = newVertex.position.x / (m_AspectRatio * m_Camera.fov);
+			newVertex.position.y = newVertex.position.y / m_Camera.fov;
+
+			// Convert from NDC to screen
+			newVertex.position.x = ConvertNDCtoScreen(newVertex.position, m_Width, m_Height).x;
+			newVertex.position.y = ConvertNDCtoScreen(newVertex.position, m_Width, m_Height).y;
+
+			vertices_out.push_back(newVertex);
+		}
+		const Mesh newMesh
+		{
+			vertices_out,
+			meshes_in[i].indices,
+			meshes_in[i].primitiveTopology
 		};
-
-		newVertex.position = m_Camera.invViewMatrix.TransformPoint(newVertex.position);
-
-		//positive Z-axis is pointing into the screen
-		newVertex.position.x = newVertex.position.x / newVertex.position.z;
-		newVertex.position.y = newVertex.position.y / newVertex.position.z;
-
-		newVertex.position.x = newVertex.position.x / (m_AspectRatio * m_Camera.fov);
-		newVertex.position.y = newVertex.position.y / m_Camera.fov;
-
-		// Convert from NDC to screen
-		newVertex.position.x = ConvertNDCtoScreen(newVertex.position, m_Width, m_Height).x;
-		newVertex.position.y = ConvertNDCtoScreen(newVertex.position, m_Width, m_Height).y;
-
-		vertices_out.push_back(newVertex);
+		meshes_out.push_back(newMesh);
 	}
 }
-
 bool Renderer::SaveBufferToImage() const
 {
 	return SDL_SaveBMP(m_pBackBuffer, "Rasterizer_ColorBuffer.bmp");
