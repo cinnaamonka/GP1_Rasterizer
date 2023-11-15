@@ -22,6 +22,9 @@ namespace dae
 	Texture* Texture::LoadFromFile(const std::string& path)
 	{
 		//TODO
+		
+		IMG_Load(path);
+
 		//Load SDL_Surface using IMG_LOAD
 		//Create & Return a new Texture Object (using SDL_Surface)
 
