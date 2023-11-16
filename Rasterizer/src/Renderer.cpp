@@ -347,21 +347,22 @@ void Renderer::Render_W2_Part1()
 		Mesh
 		{
 			{
-				Vertex{{-3, 3, -2}},
-				Vertex{{ 0,  3, -2}},
-				Vertex{{ 3,  3, -2}},
-				Vertex{{-3,  0, -2}},
-				Vertex{{ 0,  0, -2}},
-				Vertex{{ 3,  0, -2}},
-				Vertex{{-3, -3, -2}},
-				Vertex{{ 0, -3, -2}},
-				Vertex{{ 3, -3, -2}}
+				Vertex{{-3, 3, -2},{},{0,0}},
+				Vertex{{ 0,  3, -2},{},{0.5,0}},
+				Vertex{{ 3,  3, -2},{},{1,0}},
+				Vertex{{-3,  0, -2},{},{0,0.5}},
+				Vertex{{ 0,  0, -2},{},{0.5,0.5}},
+				Vertex{{ 3,  0, -2},{},{1,0.5}},
+				Vertex{{-3, -3, -2},{},{0,1}},
+				Vertex{{ 0, -3, -2},{},{0.5,1}},
+				Vertex{{ 3, -3, -2},{},{1,1}}
 			},
 			{
 				3, 0, 1,    1, 4, 3,    4, 1, 2,
 				2, 5, 4,    6, 3, 4,    4, 7, 6,
 				7, 4, 5,    5, 8, 7
 			},
+	
 			PrimitiveTopology::TriangleList
 		}
 	};
@@ -411,33 +412,33 @@ void Renderer::Render_W2_Part1()
 	//clearing the back buffer
 	ColorRGB finalColor;
 	Triangle currentTriangle;
-	for (int i = 0; i < m_Meshes[1].indices.size() - 2; i++)
+	for (int i = 0; i < m_Meshes[0].indices.size() - 2; i++)
 	{
-		if (m_Meshes[1].primitiveTopology == PrimitiveTopology::TriangleList)
+		if (m_Meshes[0].primitiveTopology == PrimitiveTopology::TriangleList)
 		{
 			currentTriangle =
 			{
-				meshes_screen[1].vertices[m_Meshes[1].indices[i]],
-				meshes_screen[1].vertices[m_Meshes[1].indices[i + 1]],
-				meshes_screen[1].vertices[m_Meshes[1].indices[i + 2]]
+				meshes_screen[0].vertices[m_Meshes[0].indices[i]],
+				meshes_screen[0].vertices[m_Meshes[0].indices[i + 1]],
+				meshes_screen[0].vertices[m_Meshes[0].indices[i + 2]]
 			};
 		}
 		else if (i % 2 == 0)
 		{
 			currentTriangle =
 			{
-				meshes_screen[1].vertices[m_Meshes[1].indices[i]],
-				meshes_screen[1].vertices[m_Meshes[1].indices[i + 1]],
-				meshes_screen[1].vertices[m_Meshes[1].indices[i + 2]]
+				meshes_screen[0].vertices[m_Meshes[0].indices[i]],
+				meshes_screen[0].vertices[m_Meshes[0].indices[i + 1]],
+				meshes_screen[0].vertices[m_Meshes[0].indices[i + 2]]
 			};
 		}
 		else
 		{
 			currentTriangle =
 			{
-				meshes_screen[1].vertices[m_Meshes[1].indices[i]],
-				meshes_screen[1].vertices[m_Meshes[1].indices[i + 2]],
-				meshes_screen[1].vertices[m_Meshes[1].indices[i + 1]]
+				meshes_screen[0].vertices[m_Meshes[0].indices[i]],
+				meshes_screen[0].vertices[m_Meshes[0].indices[i + 2]],
+				meshes_screen[0].vertices[m_Meshes[0].indices[i + 1]]
 			};
 		}
 
@@ -471,11 +472,11 @@ void Renderer::Render_W2_Part1()
 
 				// Calculate 2D cross products (signed areas)
 
-				float cross0 = Vector2::Cross(pointToVertex, edge);	if (cross0 >= 0) continue;
+				float cross1 = Vector2::Cross(pointToVertex2, edge2);	if (cross1 >= 0) continue;
+   
+				float cross0 = Vector2::Cross(pointToVertex1, edge1);	if (cross0 >= 0) continue;
 
-				float cross1 = Vector2::Cross(pointToVertex1, edge1);	if (cross1 >= 0) continue;
-
-				float cross2 = Vector2::Cross(pointToVertex2, edge2);	if (cross2 >= 0) continue;
+				float cross2 = Vector2::Cross(pointToVertex, edge);	if (cross2 >= 0) continue;
 
 
 				// Check the signs of the cross products
