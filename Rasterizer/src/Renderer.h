@@ -28,16 +28,11 @@ namespace dae
 		Renderer& operator=(Renderer&&) noexcept = delete;
 
 		void Update(Timer* pTimer);
-		void Render_W1_Part1();
-		void Render_W1_Part2();
-		void Render_W1_Part3();
-		void Render_W1_Part4();
-		void Render_W2_Part1();
+		void Render();
 
 		bool SaveBufferToImage() const;
 		void VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh>& meshes_out) const;
 		Vector2 ConvertNDCtoScreen(const Vector3& ndc, int screenWidth, int screenHeight)const;
-		bool IsPixelInsideTriangle(const Vector2& pixel, const Vector2& v0, const Vector2& v1, const Vector2& v2);
 		
 	private:
 		SDL_Window* m_pWindow{};

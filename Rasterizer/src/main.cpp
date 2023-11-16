@@ -75,7 +75,7 @@ int main(int argc, char* args[])
 		pRenderer->Update(pTimer);
 
 		//--------- Render ---------
-		pRenderer->Render_W2_Part1();
+		pRenderer->Render();
 
 		//--------- Timer ---------
 		pTimer->Update();
