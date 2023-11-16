@@ -362,7 +362,7 @@ void Renderer::Render_W2_Part1()
 				2, 5, 4,    6, 3, 4,    4, 7, 6,
 				7, 4, 5,    5, 8, 7
 			},
-	
+
 			PrimitiveTopology::TriangleList
 		}
 	};
@@ -473,7 +473,7 @@ void Renderer::Render_W2_Part1()
 				// Calculate 2D cross products (signed areas)
 
 				float cross1 = Vector2::Cross(pointToVertex2, edge2);	if (cross1 >= 0) continue;
-   
+
 				float cross0 = Vector2::Cross(pointToVertex1, edge1);	if (cross0 >= 0) continue;
 
 				float cross2 = Vector2::Cross(pointToVertex, edge);	if (cross2 >= 0) continue;
@@ -490,21 +490,21 @@ void Renderer::Render_W2_Part1()
 
 
 				//interpolate through the depth values
-				const float pixelDepth =
-					currentTriangle.vertex0.position.z * W0 +
-					currentTriangle.vertex1.position.z * W1 +
-					currentTriangle.vertex2.position.z * W2;
+				const float pixelDepth = 1 /
+					(W0 / currentTriangle.vertex0.position.z +
+						W1 / currentTriangle.vertex1.position.z +
+						W2 / currentTriangle.vertex2.position.z);
 
 				const int pixelIndex{ px + py * m_Width };
 
 				if (pixelDepth > m_pDepthBuffer[pixelIndex]) continue;
 
+				m_pDepthBuffer[pixelIndex] = pixelDepth;
 
 				//interpolate through the depth values
-				const Vector2 uvInterp =
-					currentTriangle.vertex0.uv * W0 +
-					currentTriangle.vertex1.uv * W1 +
-					currentTriangle.vertex2.uv * W2;
+				const Vector2 uvInterp = (currentTriangle.vertex0.uv * W0 / currentTriangle.vertex0.position.z +
+					currentTriangle.vertex1.uv * W1 / currentTriangle.vertex1.position.z +
+					currentTriangle.vertex2.uv * W2 / currentTriangle.vertex2.position.z) * pixelDepth;
 
 
 				finalColor = m_Texture1->Sample(uvInterp);
