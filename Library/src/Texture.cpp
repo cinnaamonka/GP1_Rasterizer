@@ -23,19 +23,44 @@ namespace dae
 	{
 		//TODO
 		
-		IMG_Load(path);
-
+		 SDL_Surface* pSurface = IMG_Load(path.c_str());
+		
+		 Texture* textureObject = new Texture(pSurface);
 		//Load SDL_Surface using IMG_LOAD
 		//Create & Return a new Texture Object (using SDL_Surface)
 
-		return nullptr;
+		return textureObject;
 	}
-
 	ColorRGB Texture::Sample(const Vector2& uv) const
 	{
-		//TODO
-		//Sample the correct texel for the given uv
+		// Ensure that the texture has a valid surface
+		if (!m_pSurface)
+		{
+			// Handle error or return a default color
+			return ColorRGB(0.0f, 0.0f, 0.0f);
+		}
 
-		return {};
+		// Convert UV coordinates to pixel coordinates
+		int x = static_cast<int>(uv.x * m_pSurface->w);
+		int y = static_cast<int>(uv.y * m_pSurface->h);
+
+		// Clamp pixel coordinates to valid range
+		x = std::max(0, std::min(x, m_pSurface->w - 1));
+		y = std::max(0, std::min(y, m_pSurface->h - 1));
+
+		// Calculate the index of the pixel in the single array
+		int index = y * m_pSurface->pitch + x * m_pSurface->format->BytesPerPixel;
+
+		// Read the color of the pixel
+		Uint8 r, g, b;
+		SDL_GetRGB(*reinterpret_cast<Uint32*>(&m_pSurface->pixels + index), m_pSurface->format, &r, &g, &b);
+
+		// Remap color values to [0, 1] range
+		float normalizedR = static_cast<float>(r) / 255.0f;
+		float normalizedG = static_cast<float>(g) / 255.0f;
+		float normalizedB = static_cast<float>(b) / 255.0f;
+
+		return ColorRGB(normalizedR, normalizedG, normalizedB);
 	}
+
 }

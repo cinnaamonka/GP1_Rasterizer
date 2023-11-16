@@ -1,7 +1,7 @@
 #include "Vector2.h"
 
 #include <cassert>
-
+#include <chrono>
 #include <cmath>
 
 #include "MathHelpers.h"
@@ -29,6 +29,11 @@ namespace dae {
 	float Vector2::Normalize()
 	{
 		const float m = Magnitude();
+		const auto start = std::chrono::high_resolution_clock::now();
+
+		if (m == 0) return -1;
+		const auto end = std::chrono::high_resolution_clock::now();
+		const std::chrono::duration<double> diff = end - start;
 		x /= m;
 		y /= m;
 

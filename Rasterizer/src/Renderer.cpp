@@ -391,13 +391,18 @@ void Renderer::Render_W2_Part1()
 
 	VertexTransformationFunction(m_Meshes, meshes_screen);
 
+	SDL_FillRect(m_pBackBuffer, NULL, SDL_MapRGB(m_pBackBuffer->format,
+		static_cast<uint8_t>(100.f * 255),
+		static_cast<uint8_t>(100.f * 255),
+		static_cast<uint8_t>(100.f * 255))
+	);
 
 	// depth buffer is initialized with the maximum value of float
 	std::fill(m_pDepthBuffer.begin(), m_pDepthBuffer.end(), std::numeric_limits<float>::max());
 
 	const SDL_Rect clearRect = { 0, 0, m_Width, m_Height };
 	//clearing the back buffer
-	SDL_FillRect(m_pBackBuffer, &clearRect, Uint32(100));
+	/*SDL_FillRect(m_pBackBuffer, &clearRect, Uint32(100));*/
 
 	ColorRGB finalColor;
 	Triangle currentTriangle;
@@ -486,7 +491,14 @@ void Renderer::Render_W2_Part1()
 
 				m_pDepthBuffer[pixelIndex] = pixelDepth;
 
+				Vector2 uvInterp = currentTriangle.vertex0.uv * W0 + currentTriangle.vertex1.uv * W1 + currentTriangle.vertex2.uv * W2;
+				
+				//Texture* test;
+				//test->LoadFromFile("Resources/")
+				// Sample texture using the interpolated UV coordinates
+				//ColorRGB textureColor = test->Sample(uvInterp);
 				finalColor = currentTriangle.vertex0.color * W0 + currentTriangle.vertex1.color * W1 + currentTriangle.vertex2.color * W2;
+			//	finalColor = textureColor;
 
 				finalColor.MaxToOne();
 
