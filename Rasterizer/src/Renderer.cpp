@@ -27,11 +27,15 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_Camera.Initialize(60.f, { .0f,.0f,-10.f });
 	m_AspectRatio = m_AspectRatio = static_cast<float>(m_Width) / static_cast<float>(m_Height);
 	m_pDepthBuffer.resize(m_Height * m_Width);
+
+	m_Texture1 = Texture::LoadFromFile("Resources/uv_grid_2.png");
+	//Utils::ParseOBJ()
+
 }
 
 Renderer::~Renderer()
 {
-
+	delete m_Texture1;
 }
 
 void Renderer::Update(Timer* pTimer)
@@ -367,15 +371,15 @@ void Renderer::Render_W2_Part1()
 		Mesh
 		{
 			{
-				Vertex{{-3, 3, -2}},
-				Vertex{{ 0,  3, -2}},
-				Vertex{{ 3,  3, -2}},
-				Vertex{{-3,  0, -2}},
-				Vertex{{ 0,  0, -2}},
-				Vertex{{ 3,  0, -2}},
-				Vertex{{-3, -3, -2}},
-				Vertex{{ 0, -3, -2}},
-				Vertex{{ 3, -3, -2}}
+				Vertex{{-3, 3, -2},ColorRGB{colors::White},{0,0}},
+				Vertex{{ 0,  3, -2},ColorRGB{colors::White},{0.5,0}},
+				Vertex{{ 3,  3, -2},ColorRGB{colors::White},{1,0}},
+				Vertex{{-3,  0, -2},ColorRGB{colors::White},{0,0.5}},
+				Vertex{{ 0,  0, -2},ColorRGB{colors::White},{0.5,0.5}},
+				Vertex{{ 3,  0, -2},ColorRGB{colors::White},{1,0.5}},
+				Vertex{{-3, -3, -2},ColorRGB{colors::White},{0,1}},
+				Vertex{{ 0, -3, -2},ColorRGB{colors::White},{0.5,1}},
+				Vertex{{ 3, -3, -2},ColorRGB{colors::White},{1,1}}
 			},
 			{
 				3, 0, 4, 1, 5, 2,
@@ -385,6 +389,9 @@ void Renderer::Render_W2_Part1()
 			PrimitiveTopology::TriangleStrip
 		}
 	};
+
+
+
 	std::vector<Mesh> meshes_screen;
 	m_Meshes.push_back(meshes_worldList[0]);
 	m_Meshes.push_back(meshes_worldStrip[0]);
@@ -402,8 +409,6 @@ void Renderer::Render_W2_Part1()
 
 	const SDL_Rect clearRect = { 0, 0, m_Width, m_Height };
 	//clearing the back buffer
-	/*SDL_FillRect(m_pBackBuffer, &clearRect, Uint32(100));*/
-
 	ColorRGB finalColor;
 	Triangle currentTriangle;
 	for (int i = 0; i < m_Meshes[1].indices.size() - 2; i++)
@@ -417,7 +422,7 @@ void Renderer::Render_W2_Part1()
 				meshes_screen[1].vertices[m_Meshes[1].indices[i + 2]]
 			};
 		}
-		else if(i % 2 == 0)
+		else if (i % 2 == 0)
 		{
 			currentTriangle =
 			{
@@ -465,19 +470,23 @@ void Renderer::Render_W2_Part1()
 				const Vector2 pointToVertex2 = P - currentTriangle.vertex2.position.GetXY();// P - V2
 
 				// Calculate 2D cross products (signed areas)
-				float cross0 = Vector2::Cross(pointToVertex, edge);	if (cross0 > 0) continue;
 
-				float cross1 = Vector2::Cross(pointToVertex1, edge1);	if (cross1 > 0) continue;
+				float cross0 = Vector2::Cross(pointToVertex, edge);	if (cross0 >= 0) continue;
 
-				float cross2 = Vector2::Cross(pointToVertex2, edge2);	if (cross2 > 0) continue;
+				float cross1 = Vector2::Cross(pointToVertex1, edge1);	if (cross1 >= 0) continue;
+
+				float cross2 = Vector2::Cross(pointToVertex2, edge2);	if (cross2 >= 0) continue;
 
 
 				// Check the signs of the cross products
 
 				const float totalParallelogramArea = cross0 + cross1 + cross2;
+
 				const float W0 = cross0 / totalParallelogramArea;
 				const float W1 = cross1 / totalParallelogramArea;
 				const float W2 = cross2 / totalParallelogramArea;
+
+
 
 				//interpolate through the depth values
 				const float pixelDepth =
@@ -489,16 +498,17 @@ void Renderer::Render_W2_Part1()
 
 				if (pixelDepth > m_pDepthBuffer[pixelIndex]) continue;
 
-				m_pDepthBuffer[pixelIndex] = pixelDepth;
 
-				Vector2 uvInterp = currentTriangle.vertex0.uv * W0 + currentTriangle.vertex1.uv * W1 + currentTriangle.vertex2.uv * W2;
-				
-				//Texture* test;
-				//test->LoadFromFile("Resources/")
-				// Sample texture using the interpolated UV coordinates
-				//ColorRGB textureColor = test->Sample(uvInterp);
-				finalColor = currentTriangle.vertex0.color * W0 + currentTriangle.vertex1.color * W1 + currentTriangle.vertex2.color * W2;
-			//	finalColor = textureColor;
+				//interpolate through the depth values
+				const Vector2 uvInterp =
+					currentTriangle.vertex0.uv * W0 +
+					currentTriangle.vertex1.uv * W1 +
+					currentTriangle.vertex2.uv * W2;
+
+
+				finalColor = m_Texture1->Sample(uvInterp);
+
+				//finalColor = currentTriangle.vertex0.color * W0 + currentTriangle.vertex1.color * W1 + currentTriangle.vertex2.color * W2;
 
 				finalColor.MaxToOne();
 
@@ -541,6 +551,8 @@ void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, 
 			newVertex.position.x = ConvertNDCtoScreen(newVertex.position, m_Width, m_Height).x;
 			newVertex.position.y = ConvertNDCtoScreen(newVertex.position, m_Width, m_Height).y;
 
+			newVertex.uv = vertex.uv;
+
 			vertices_out.push_back(newVertex);
 		}
 		const Mesh newMesh
@@ -548,7 +560,9 @@ void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, 
 			vertices_out,
 			meshes_in[i].indices,
 			meshes_in[i].primitiveTopology
+
 		};
+
 		meshes_out.push_back(newMesh);
 	}
 }

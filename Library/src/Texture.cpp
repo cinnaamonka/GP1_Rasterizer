@@ -49,11 +49,10 @@ namespace dae
 		y = std::max(0, std::min(y, m_pSurface->h - 1));
 
 		// Calculate the index of the pixel in the single array
-		int index = y * m_pSurface->pitch + x * m_pSurface->format->BytesPerPixel;
-
+		const uint32_t pixel = m_pSurfacePixels[y * m_pSurface->w + x];
 		// Read the color of the pixel
 		Uint8 r, g, b;
-		SDL_GetRGB(*reinterpret_cast<Uint32*>(&m_pSurface->pixels + index), m_pSurface->format, &r, &g, &b);
+		SDL_GetRGB(pixel, m_pSurface->format, &r, &g, &b);
 
 		// Remap color values to [0, 1] range
 		float normalizedR = static_cast<float>(r) / 255.0f;

@@ -53,6 +53,8 @@ namespace dae
 
 		std::vector<Mesh> m_Meshes;
 
+		Texture* m_Texture1;
+
 		int m_Width{};
 		int m_Height{};
 
