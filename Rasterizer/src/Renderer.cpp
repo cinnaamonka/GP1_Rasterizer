@@ -23,7 +23,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 
 	//m_pDepthBufferPixels = new float[m_Width * m_Height];
 
-	//Initialize Camera
+	//Initialize Camera!
 	m_Camera.Initialize(60.f, { .0f,.0f,-10.f });
 	m_AspectRatio = m_AspectRatio = static_cast<float>(m_Width) / static_cast<float>(m_Height);
 	m_pDepthBuffer.resize(m_Height * m_Width);
