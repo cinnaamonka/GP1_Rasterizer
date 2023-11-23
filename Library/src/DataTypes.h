@@ -13,12 +13,6 @@ namespace dae
 		Vector3 tangent{}; //W4
 		Vector3 viewDirection{}; //W4
 	};
-	struct Triangle
-	{
-		Vertex vertex0;
-		Vertex vertex1;
-		Vertex vertex2;
-	};
 	struct Vertex_Out
 	{
 		Vector4 position{};
@@ -28,6 +22,13 @@ namespace dae
 		Vector3 tangent{};
 		Vector3 viewDirection{};
 	};
+	struct Triangle
+	{
+		Vertex_Out vertex0;
+		Vertex_Out vertex1;
+		Vertex_Out vertex2;
+	};
+	
 
 	enum class PrimitiveTopology
 	{
@@ -37,11 +38,11 @@ namespace dae
 
 	struct Mesh
 	{
-		std::vector<Vertex> vertices{};
+		std::vector<Vertex_Out> vertices_out{};
 		std::vector<uint32_t> indices{};
 		PrimitiveTopology primitiveTopology{ PrimitiveTopology::TriangleStrip };
-
-		std::vector<Vertex_Out> vertices_out{};
+		std::vector<Vertex> vertices{};
+		
 		Matrix worldMatrix{};
 	};
 }

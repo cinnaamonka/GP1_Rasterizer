@@ -33,7 +33,15 @@ namespace dae
 		bool SaveBufferToImage() const;
 		void VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh>& meshes_out) const;
 		Vector2 ConvertNDCtoScreen(const Vector3& ndc, int screenWidth, int screenHeight)const;
+		static float Remap(float value, float inRangeMin, float inRangeMax)
+		{
+			// Remap color values to [0, 1] range
+			float normalizedR = static_cast<float>(value) / inRangeMax;
 		
+			    
+			return normalizedR;
+		
+		}
 	private:
 		SDL_Window* m_pWindow{};
 

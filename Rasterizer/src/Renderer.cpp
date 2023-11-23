@@ -24,8 +24,9 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	//m_pDepthBufferPixels = new float[m_Width * m_Height];
 
 	//Initialize Camera
-	m_Camera.Initialize(60.f, { .0f,.0f,-10.f });
+
 	m_AspectRatio = m_AspectRatio = static_cast<float>(m_Width) / static_cast<float>(m_Height);
+	m_Camera.Initialize(m_AspectRatio, 60.f, { .0f,.0f,-10.f });
 	m_pDepthBuffer.resize(m_Height * m_Width);
 
 	m_Texture1 = Texture::LoadFromFile("Resources/uv_grid_2.png");
@@ -50,15 +51,15 @@ void Renderer::Render()
 		Mesh
 		{
 			{
-				Vertex{{-3, 3, -2},{},{0,0}},
-				Vertex{{ 0,  3, -2},{},{0.5,0}},
-				Vertex{{ 3,  3, -2},{},{1,0}},
-				Vertex{{-3,  0, -2},{},{0,0.5}},
-				Vertex{{ 0,  0, -2},{},{0.5,0.5}},
-				Vertex{{ 3,  0, -2},{},{1,0.5}},
-				Vertex{{-3, -3, -2},{},{0,1}},
-				Vertex{{ 0, -3, -2},{},{0.5,1}},
-				Vertex{{ 3, -3, -2},{},{1,1}}
+				Vertex_Out{{-3, 3, -2,333},{},{0,0}},
+				Vertex_Out{{ 0,  3, -2,434},{},{0.5,0}},
+				Vertex_Out{{ 3,  3, -2,43},{},{1,0}},
+				Vertex_Out{{-3,  0, -2,0},{},{0,0.5}},
+				Vertex_Out{{ 0,  0, -2,0},{},{0.5,0.5}},
+				Vertex_Out{{ 3,  0, -2,4},{},{1,0.5}},
+				Vertex_Out{{-3, -3, -2,0},{},{0,1}},
+				Vertex_Out{{ 0, -3, -2,0},{},{0.5,1}},
+				Vertex_Out{{ 3, -3, -2,0},{},{1,1}}
 			},
 			{
 				3, 0, 1,    1, 4, 3,    4, 1, 2,
@@ -75,15 +76,15 @@ void Renderer::Render()
 		Mesh
 		{
 			{
-				Vertex{{-3, 3, -2},ColorRGB{colors::White},{0,0}},
-				Vertex{{ 0,  3, -2},ColorRGB{colors::White},{0.5,0}},
-				Vertex{{ 3,  3, -2},ColorRGB{colors::White},{1,0}},
-				Vertex{{-3,  0, -2},ColorRGB{colors::White},{0,0.5}},
-				Vertex{{ 0,  0, -2},ColorRGB{colors::White},{0.5,0.5}},
-				Vertex{{ 3,  0, -2},ColorRGB{colors::White},{1,0.5}},
-				Vertex{{-3, -3, -2},ColorRGB{colors::White},{0,1}},
-				Vertex{{ 0, -3, -2},ColorRGB{colors::White},{0.5,1}},
-				Vertex{{ 3, -3, -2},ColorRGB{colors::White},{1,1}}
+				Vertex_Out{{-3, 3, -2,0},ColorRGB{colors::White},{0,0}},
+				Vertex_Out{{ 0,  3, -2,0},ColorRGB{colors::White},{0.5,0}},
+				Vertex_Out{{ 3,  3, -2,0},ColorRGB{colors::White},{1,0}},
+				Vertex_Out{{-3,  0, -2,0},ColorRGB{colors::White},{0,0.5}},
+				Vertex_Out{{ 0,  0, -2,0},ColorRGB{colors::White},{0.5,0.5}},
+				Vertex_Out{{ 3,  0, -2,0},ColorRGB{colors::White},{1,0.5}},
+				Vertex_Out{{-3, -3, -2,0},ColorRGB{colors::White},{0,1}},
+				Vertex_Out{{ 0, -3, -2,0},ColorRGB{colors::White},{0.5,1}},
+				Vertex_Out{{ 3, -3, -2,0},ColorRGB{colors::White},{1,1}}
 			},
 			{
 				3, 0, 4, 1, 5, 2,
@@ -120,27 +121,27 @@ void Renderer::Render()
 		{
 			currentTriangle =
 			{
-				meshes_screen[0].vertices[m_Meshes[0].indices[i]],
-				meshes_screen[0].vertices[m_Meshes[0].indices[i + 1]],
-				meshes_screen[0].vertices[m_Meshes[0].indices[i + 2]]
+				meshes_screen[0].vertices_out[m_Meshes[0].indices[i]],
+				meshes_screen[0].vertices_out[m_Meshes[0].indices[i + 1]],
+				meshes_screen[0].vertices_out[m_Meshes[0].indices[i + 2]]
 			};
 		}
 		else if (i % 2 == 0)
 		{
 			currentTriangle =
 			{
-				meshes_screen[0].vertices[m_Meshes[0].indices[i]],
-				meshes_screen[0].vertices[m_Meshes[0].indices[i + 1]],
-				meshes_screen[0].vertices[m_Meshes[0].indices[i + 2]]
+				meshes_screen[0].vertices_out[m_Meshes[0].indices[i]],
+				meshes_screen[0].vertices_out[m_Meshes[0].indices[i + 1]],
+				meshes_screen[0].vertices_out[m_Meshes[0].indices[i + 2]]
 			};
 		}
 		else
 		{
 			currentTriangle =
 			{
-				meshes_screen[0].vertices[m_Meshes[0].indices[i]],
-				meshes_screen[0].vertices[m_Meshes[0].indices[i + 2]],
-				meshes_screen[0].vertices[m_Meshes[0].indices[i + 1]]
+				meshes_screen[0].vertices_out[m_Meshes[0].indices[i]],
+				meshes_screen[0].vertices_out[m_Meshes[0].indices[i + 2]],
+				meshes_screen[0].vertices_out[m_Meshes[0].indices[i + 1]]
 			};
 		}
 
@@ -164,7 +165,7 @@ void Renderer::Render()
 				Vector2 P = { static_cast<float>(px) + 0.5f, static_cast<float>(py) + 0.5f };
 
 				// Calculate vectors from vertices to the pixel
-			
+
 				const Vector2 edge = currentTriangle.vertex1.position.GetXY() - currentTriangle.vertex0.position.GetXY();// V1 - V0
 				const Vector2 edge1 = currentTriangle.vertex2.position.GetXY() - currentTriangle.vertex1.position.GetXY();// V2 - V1
 				const Vector2 edge2 = currentTriangle.vertex0.position.GetXY() - currentTriangle.vertex2.position.GetXY();
@@ -192,25 +193,24 @@ void Renderer::Render()
 
 
 				//interpolate through the depth values
-				const float pixelDepth = 1 /
-						(W0 / currentTriangle.vertex0.position.z +
+				float pixelDepth = 1 /
+					(W0 / currentTriangle.vertex0.position.z +
 						W1 / currentTriangle.vertex1.position.z +
 						W2 / currentTriangle.vertex2.position.z);
-
+				
 				const int pixelIndex = { px + py * m_Width };
 
 				if (pixelDepth > m_pDepthBuffer[pixelIndex]) continue;
 
 				m_pDepthBuffer[pixelIndex] = pixelDepth;
-
+				float test = Remap(pixelDepth, 0.98f, 1.f);
 				//interpolate through the depth values
 				const Vector2 uvInterp = (currentTriangle.vertex0.uv * W0 / currentTriangle.vertex0.position.z +
 					currentTriangle.vertex1.uv * W1 / currentTriangle.vertex1.position.z +
-					currentTriangle.vertex2.uv * W2 / currentTriangle.vertex2.position.z) * pixelDepth;
+					currentTriangle.vertex2.uv * W2 / currentTriangle.vertex2.position.z) * test;
 
+	
 				finalColor = m_Texture1->Sample(uvInterp);
-
-				finalColor.MaxToOne();
 
 				m_pBackBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBackBuffer->format,
 					static_cast<uint8_t>(finalColor.r * 255),
@@ -228,24 +228,21 @@ void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, 
 {
 	for (int i = 0; i < meshes_in.size(); i++)
 	{
-		std::vector<Vertex> vertices_out;
+		std::vector<Vertex_Out> vertices_out;
 
-		for (const auto& vertex : meshes_in[i].vertices)
+		for (const auto& vertex : meshes_in[i].vertices_out)
 		{
-			Vertex newVertex
+			Vertex_Out newVertex
 			{
 				vertex.position,
 				vertex.color
 			};
 
-			newVertex.position = m_Camera.invViewMatrix.TransformPoint(newVertex.position);
+			newVertex.position = m_Camera.worldViewProectionMatrix.TransformPoint(newVertex.position);
 
 			//positive Z-axis is pointing into the screen
-			newVertex.position.x = newVertex.position.x / newVertex.position.z;
-			newVertex.position.y = newVertex.position.y / newVertex.position.z;
-
-			newVertex.position.x = newVertex.position.x / (m_AspectRatio * m_Camera.fov);
-			newVertex.position.y = newVertex.position.y / m_Camera.fov;
+			newVertex.position.x = newVertex.position.x / newVertex.position.w;
+			newVertex.position.y = newVertex.position.y / newVertex.position.w;
 
 			// Convert from NDC to screen
 			newVertex.position.x = ConvertNDCtoScreen(newVertex.position, m_Width, m_Height).x;

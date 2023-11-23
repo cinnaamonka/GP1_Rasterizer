@@ -165,9 +165,13 @@ namespace dae {
 
 	Matrix Matrix::CreatePerspectiveFovLH(float fov, float aspect, float zn, float zf)
 	{
-		//TODO W3
-
-		return {};
+		return Matrix
+		{
+			Vector4(1 / (aspect * fov),0,0,0),
+			Vector4(0,1 / fov,0,0),
+			Vector4(0, 0,zf / (zf - zn),1),
+			Vector4(0, 0, -(zf * zn) / (zf - zn),0)
+		};
 	}
 
 	Vector3 Matrix::GetAxisX() const
@@ -298,7 +302,7 @@ namespace dae {
 	bool Matrix::operator==(const Matrix& m) const
 	{
 		return data[0] == m.data[0]
-		    && data[1] == m.data[1]
+			&& data[1] == m.data[1]
 			&& data[2] == m.data[2]
 			&& data[3] == m.data[3];
 	}
