@@ -25,7 +25,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 
 	//Initialize Camera
 
-	m_AspectRatio = m_AspectRatio = static_cast<float>(m_Width) / static_cast<float>(m_Height);
+	m_AspectRatio = static_cast<float>(m_Width) / static_cast<float>(m_Height);
 	m_Camera.Initialize(m_AspectRatio, 60.f, { .0f,.0f,-10.f });
 	m_pDepthBuffer.resize(m_Height * m_Width);
 
@@ -51,15 +51,15 @@ void Renderer::Render()
 		Mesh
 		{
 			{
-				Vertex_Out{{-3, 3, -2,333},{},{0,0}},
-				Vertex_Out{{ 0,  3, -2,434},{},{0.5,0}},
-				Vertex_Out{{ 3,  3, -2,43},{},{1,0}},
-				Vertex_Out{{-3,  0, -2,0},{},{0,0.5}},
-				Vertex_Out{{ 0,  0, -2,0},{},{0.5,0.5}},
-				Vertex_Out{{ 3,  0, -2,4},{},{1,0.5}},
-				Vertex_Out{{-3, -3, -2,0},{},{0,1}},
-				Vertex_Out{{ 0, -3, -2,0},{},{0.5,1}},
-				Vertex_Out{{ 3, -3, -2,0},{},{1,1}}
+				Vertex_Out{{-3, 3, -2,1},{},{0,0}},
+				Vertex_Out{{ 0,  3, -2,1},{},{0.5,0}},
+				Vertex_Out{{ 3,  3, -2,1},{},{1,0}},
+				Vertex_Out{{-3,  0, -2,1},{},{0,0.5}},
+				Vertex_Out{{ 0,  0, -2,1},{},{0.5,0.5}},
+				Vertex_Out{{ 3,  0, -2,1},{},{1,0.5}},
+				Vertex_Out{{-3, -3, -2,1},{},{0,1}},
+				Vertex_Out{{ 0, -3, -2,1},{},{0.5,1}},
+				Vertex_Out{{ 3, -3, -2,1},{},{1,1}}
 			},
 			{
 				3, 0, 1,    1, 4, 3,    4, 1, 2,
@@ -76,15 +76,15 @@ void Renderer::Render()
 		Mesh
 		{
 			{
-				Vertex_Out{{-3, 3, -2,0},ColorRGB{colors::White},{0,0}},
-				Vertex_Out{{ 0,  3, -2,0},ColorRGB{colors::White},{0.5,0}},
-				Vertex_Out{{ 3,  3, -2,0},ColorRGB{colors::White},{1,0}},
-				Vertex_Out{{-3,  0, -2,0},ColorRGB{colors::White},{0,0.5}},
-				Vertex_Out{{ 0,  0, -2,0},ColorRGB{colors::White},{0.5,0.5}},
-				Vertex_Out{{ 3,  0, -2,0},ColorRGB{colors::White},{1,0.5}},
-				Vertex_Out{{-3, -3, -2,0},ColorRGB{colors::White},{0,1}},
-				Vertex_Out{{ 0, -3, -2,0},ColorRGB{colors::White},{0.5,1}},
-				Vertex_Out{{ 3, -3, -2,0},ColorRGB{colors::White},{1,1}}
+				Vertex_Out{{-3, 3, -2,-4},ColorRGB{colors::White},{0,0}},
+				Vertex_Out{{ 0,  3, -2,-4},ColorRGB{colors::White},{0.5,0}},
+				Vertex_Out{{ 3,  3, -2,-4},ColorRGB{colors::White},{1,0}},
+				Vertex_Out{{-3,  0, -2,-4},ColorRGB{colors::White},{0,0.5}},
+				Vertex_Out{{ 0,  0, -2,-4},ColorRGB{colors::White},{0.5,0.5}},
+				Vertex_Out{{ 3,  0, -2,-4},ColorRGB{colors::White},{1,0.5}},
+				Vertex_Out{{-3, -3, -2,-4},ColorRGB{colors::White},{0,1}},
+				Vertex_Out{{ 0, -3, -2,-4},ColorRGB{colors::White},{0.5,1}},
+				Vertex_Out{{ 3, -3, -2,-4},ColorRGB{colors::White},{1,1}}
 			},
 			{
 				3, 0, 4, 1, 5, 2,
@@ -194,20 +194,28 @@ void Renderer::Render()
 
 				//interpolate through the depth values
 				float pixelDepth = 1 /
-					(W0 / currentTriangle.vertex0.position.z +
-						W1 / currentTriangle.vertex1.position.z +
-						W2 / currentTriangle.vertex2.position.z);
+										(W0 / currentTriangle.vertex0.position.z +
+										W1 / currentTriangle.vertex1.position.z +
+										W2 / currentTriangle.vertex2.position.z);
 				
+				if (pixelDepth < 0 || pixelDepth > 1) continue;
+
 				const int pixelIndex = { px + py * m_Width };
 
 				if (pixelDepth > m_pDepthBuffer[pixelIndex]) continue;
 
 				m_pDepthBuffer[pixelIndex] = pixelDepth;
-				float test = Remap(pixelDepth, 0.98f, 1.f);
+
+				float interpolatedDepth = 1 /
+						(W0 / currentTriangle.vertex0.position.w +
+						W1 / currentTriangle.vertex1.position.w +
+						W2 / currentTriangle.vertex2.position.w);
+
 				//interpolate through the depth values
-				const Vector2 uvInterp = (currentTriangle.vertex0.uv * W0 / currentTriangle.vertex0.position.z +
-					currentTriangle.vertex1.uv * W1 / currentTriangle.vertex1.position.z +
-					currentTriangle.vertex2.uv * W2 / currentTriangle.vertex2.position.z) * test;
+
+				const Vector2 uvInterp = (currentTriangle.vertex0.uv * W0 / currentTriangle.vertex0.position.w +
+					currentTriangle.vertex1.uv * W1 / currentTriangle.vertex1.position.w +
+					currentTriangle.vertex2.uv * W2 / currentTriangle.vertex2.position.w) * interpolatedDepth;
 
 	
 				finalColor = m_Texture1->Sample(uvInterp);
@@ -243,13 +251,13 @@ void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, 
 			//positive Z-axis is pointing into the screen
 			newVertex.position.x = newVertex.position.x / newVertex.position.w;
 			newVertex.position.y = newVertex.position.y / newVertex.position.w;
+			newVertex.position.z = newVertex.position.z / newVertex.position.w;
 
 			// Convert from NDC to screen
 			newVertex.position.x = ConvertNDCtoScreen(newVertex.position, m_Width, m_Height).x;
 			newVertex.position.y = ConvertNDCtoScreen(newVertex.position, m_Width, m_Height).y;
 
 			newVertex.uv = vertex.uv;
-
 			vertices_out.push_back(newVertex);
 		}
 		const Mesh newMesh

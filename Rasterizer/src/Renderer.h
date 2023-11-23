@@ -36,7 +36,7 @@ namespace dae
 		static float Remap(float value, float inRangeMin, float inRangeMax)
 		{
 			// Remap color values to [0, 1] range
-			float normalizedR = static_cast<float>(value) / inRangeMax;
+			float normalizedR = inRangeMin + static_cast<float>(value) / inRangeMax ;
 		
 			    
 			return normalizedR;

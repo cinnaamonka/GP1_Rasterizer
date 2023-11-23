@@ -67,7 +67,7 @@ namespace dae
 			//TODO W3
 			
 			ProjectionMatrix = Matrix::CreatePerspectiveFovLH(fov, aspectRatioVar, near,far); 
-			worldViewProectionMatrix = CalculateCameraToWorld() * viewMatrix * ProjectionMatrix;
+			worldViewProectionMatrix = invViewMatrix * ProjectionMatrix;
 			//DirectX Implementation => https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dxmatrixperspectivefovlh
 		}
 		Matrix CalculateCameraToWorld()
