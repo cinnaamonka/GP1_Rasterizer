@@ -30,7 +30,8 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_pDepthBuffer.resize(m_Height * m_Width);
 	m_FinalColorEnabled = true;
 
-	m_Texture1 = Texture::LoadFromFile("Resources/uv_grid_2.png");
+	//m_Texture1 = Texture::LoadFromFile("Resources/uv_grid_2.png");
+	m_Texture1 = Texture::LoadFromFile("Resources/vehicle_diffuse.png");
 }
 
 Renderer::~Renderer()
@@ -47,7 +48,7 @@ void Renderer::Render()
 {
 	SDL_LockSurface(m_pBackBuffer);
 
-	std::vector<Mesh> meshes_worldList
+	/*std::vector<Mesh> meshes_worldList
 	{
 		Mesh
 		{
@@ -77,15 +78,15 @@ void Renderer::Render()
 		Mesh
 		{
 			{
-				Vertex_Out{{-3, 3, -2,-4},ColorRGB{colors::White},{0,0}},
-				Vertex_Out{{ 0,  3, -2,-4},ColorRGB{colors::White},{0.5,0}},
-				Vertex_Out{{ 3,  3, -2,-4},ColorRGB{colors::White},{1,0}},
-				Vertex_Out{{-3,  0, -2,-4},ColorRGB{colors::White},{0,0.5}},
-				Vertex_Out{{ 0,  0, -2,-4},ColorRGB{colors::White},{0.5,0.5}},
-				Vertex_Out{{ 3,  0, -2,-4},ColorRGB{colors::White},{1,0.5}},
-				Vertex_Out{{-3, -3, -2,-4},ColorRGB{colors::White},{0,1}},
-				Vertex_Out{{ 0, -3, -2,-4},ColorRGB{colors::White},{0.5,1}},
-				Vertex_Out{{ 3, -3, -2,-4},ColorRGB{colors::White},{1,1}}
+				Vertex_Out{{-3, 3, -2,1},ColorRGB{colors::White},{0,0}},
+				Vertex_Out{{ 0,  3, -2,1},ColorRGB{colors::White},{0.5,0}},
+				Vertex_Out{{ 3,  3, -2,1},ColorRGB{colors::White},{1,0}},
+				Vertex_Out{{-3,  0, -2,1},ColorRGB{colors::White},{0,0.5}},
+				Vertex_Out{{ 0,  0, -2,1},ColorRGB{colors::White},{0.5,0.5}},
+				Vertex_Out{{ 3,  0, -2,1},ColorRGB{colors::White},{1,0.5}},
+				Vertex_Out{{-3, -3, -2,1},ColorRGB{colors::White},{0,1}},
+				Vertex_Out{{ 0, -3, -2,1},ColorRGB{colors::White},{0.5,1}},
+				Vertex_Out{{ 3, -3, -2,1},ColorRGB{colors::White},{1,1}}
 			},
 			{
 				3, 0, 4, 1, 5, 2,
@@ -94,11 +95,18 @@ void Renderer::Render()
 			},
 			PrimitiveTopology::TriangleStrip
 		}
-	};
+	};*/
 
-	std::vector<Mesh> meshes_screen;
-	m_Meshes.push_back(meshes_worldList[0]);
-	m_Meshes.push_back(meshes_worldStrip[0]);
+	Mesh vehicle{};
+	Utils::ParseOBJ("Resources/vehicle.obj", vehicle.vertices, vehicle.indices);
+	vehicle.primitiveTopology = PrimitiveTopology::TriangleList;
+	
+
+	std::vector<Mesh4> meshes_screen;
+	m_Meshes.push_back(vehicle);
+	/*m_Meshes.push_back(meshes_worldList[0]);
+	m_Meshes.push_back(meshes_worldStrip[0]);*/
+	
 
 	VertexTransformationFunction(m_Meshes, meshes_screen);
 
@@ -114,12 +122,13 @@ void Renderer::Render()
 	const SDL_Rect clearRect = { 0, 0, m_Width, m_Height };
 	//clearing the back buffer
 	ColorRGB finalColor;
-	Triangle currentTriangle;
+	Triangle4 currentTriangle;
 
 	for (int i = 0; i < m_Meshes[0].indices.size() - 2; i++)
 	{
 		if (m_Meshes[0].primitiveTopology == PrimitiveTopology::TriangleList)
 		{
+			const auto& meshes_screen1 = meshes_screen;
 			currentTriangle =
 			{
 				meshes_screen[0].vertices_out[m_Meshes[0].indices[i]],
@@ -195,10 +204,10 @@ void Renderer::Render()
 
 				//interpolate through the depth values
 				float pixelDepth = 1 /
-										(W0 / currentTriangle.vertex0.position.z +
-										W1 / currentTriangle.vertex1.position.z +
-										W2 / currentTriangle.vertex2.position.z);
-				
+					(W0 / currentTriangle.vertex0.position.z +
+						W1 / currentTriangle.vertex1.position.z +
+						W2 / currentTriangle.vertex2.position.z);
+
 				if (pixelDepth < 0 || pixelDepth > 1) continue;// culling
 
 				const int pixelIndex = { px + py * m_Width };
@@ -208,9 +217,9 @@ void Renderer::Render()
 				m_pDepthBuffer[pixelIndex] = pixelDepth;
 
 				float interpolatedDepth = 1 /
-						(W0 / currentTriangle.vertex0.position.w +
+					(W0 / currentTriangle.vertex0.position.w +
 						W1 / currentTriangle.vertex1.position.w +
-						W2 / currentTriangle.vertex2.position.w);
+						W2 /currentTriangle.vertex2.position.w);
 
 				//interpolate through the depth values
 
@@ -218,7 +227,7 @@ void Renderer::Render()
 					currentTriangle.vertex1.uv * W1 / currentTriangle.vertex1.position.w +
 					currentTriangle.vertex2.uv * W2 / currentTriangle.vertex2.position.w) * interpolatedDepth;
 
-			
+
 
 				if (m_FinalColorEnabled)
 				{
@@ -226,10 +235,10 @@ void Renderer::Render()
 				}
 				else
 				{
-					const float remap =  Remap(pixelDepth, 0.985f, 1.0f, 0.2f, 1.0f);
+					const float remap = Remap(pixelDepth, 0.985f, 1.0f, 0.2f, 1.0f);
 					finalColor = ColorRGB{ remap, remap, remap };
 				}
-			
+
 				m_pBackBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBackBuffer->format,
 					static_cast<uint8_t>(finalColor.r * 255),
 					static_cast<uint8_t>(finalColor.g * 255),
@@ -242,17 +251,17 @@ void Renderer::Render()
 	SDL_UpdateWindowSurface(m_pWindow);
 }
 
-void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh>& meshes_out) const
+void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh4>& meshes_out) const
 {
 	for (int i = 0; i < meshes_in.size(); i++)
 	{
 		std::vector<Vertex_Out> vertices_out;
 
-		for (const auto& vertex : meshes_in[i].vertices_out)
+		for (const auto& vertex : meshes_in[i].vertices)
 		{
 			Vertex_Out newVertex
 			{
-				vertex.position,
+				Vector4{vertex.position.x,vertex.position.y,vertex.position.z,1},
 				vertex.color
 			};
 
@@ -270,7 +279,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, 
 			newVertex.uv = vertex.uv;
 			vertices_out.push_back(newVertex);
 		}
-		const Mesh newMesh
+		const Mesh4 newMesh
 		{
 			vertices_out,
 			meshes_in[i].indices,

@@ -24,11 +24,16 @@ namespace dae
 	};
 	struct Triangle
 	{
+		Vertex vertex0;
+		Vertex vertex1;
+		Vertex vertex2;
+	};
+	struct Triangle4
+	{
 		Vertex_Out vertex0;
 		Vertex_Out vertex1;
 		Vertex_Out vertex2;
 	};
-	
 
 	enum class PrimitiveTopology
 	{
@@ -41,8 +46,16 @@ namespace dae
 		std::vector<Vertex_Out> vertices_out{};
 		std::vector<uint32_t> indices{};
 		PrimitiveTopology primitiveTopology{ PrimitiveTopology::TriangleStrip };
+
 		std::vector<Vertex> vertices{};
-		
+		Matrix worldMatrix{};
+	};
+	struct Mesh4
+	{
+		std::vector<Vertex_Out> vertices_out{};
+		std::vector<uint32_t> indices{};
+		PrimitiveTopology primitiveTopology{ PrimitiveTopology::TriangleStrip };
+
 		Matrix worldMatrix{};
 	};
 }

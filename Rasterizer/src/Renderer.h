@@ -12,7 +12,9 @@ namespace dae
 {
 	class Texture;
 	struct Mesh;
+	struct Mesh4;
 	struct Vertex;
+	struct Vertex_Out;
 	class Timer;
 	class Scene;
 
@@ -31,7 +33,7 @@ namespace dae
 		void Render();
 
 		bool SaveBufferToImage() const;
-		void VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh>& meshes_out) const;
+		void VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh4>& meshes_out) const;
 		Vector2 ConvertNDCtoScreen(const Vector3& ndc, int screenWidth, int screenHeight)const;
 		void ToggleShadows() { m_FinalColorEnabled = !m_FinalColorEnabled; };
 
@@ -47,7 +49,10 @@ namespace dae
 		Camera m_Camera{};
 		float m_AspectRatio;
 		bool m_FinalColorEnabled;
+
 		std::vector<Mesh> m_Meshes;
+
+		
 
 		Texture* m_Texture1;
 
