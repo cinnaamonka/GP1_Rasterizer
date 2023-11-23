@@ -28,6 +28,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	m_AspectRatio = static_cast<float>(m_Width) / static_cast<float>(m_Height);
 	m_Camera.Initialize(m_AspectRatio, 60.f, { .0f,.0f,-10.f });
 	m_pDepthBuffer.resize(m_Height * m_Width);
+	m_FinalColorEnabled = true;
 
 	m_Texture1 = Texture::LoadFromFile("Resources/uv_grid_2.png");
 }
@@ -198,7 +199,7 @@ void Renderer::Render()
 										W1 / currentTriangle.vertex1.position.z +
 										W2 / currentTriangle.vertex2.position.z);
 				
-				if (pixelDepth < 0 || pixelDepth > 1) continue;
+				if (pixelDepth < 0 || pixelDepth > 1) continue;// culling
 
 				const int pixelIndex = { px + py * m_Width };
 
@@ -217,9 +218,18 @@ void Renderer::Render()
 					currentTriangle.vertex1.uv * W1 / currentTriangle.vertex1.position.w +
 					currentTriangle.vertex2.uv * W2 / currentTriangle.vertex2.position.w) * interpolatedDepth;
 
-	
-				finalColor = m_Texture1->Sample(uvInterp);
+			
 
+				if (m_FinalColorEnabled)
+				{
+					finalColor = m_Texture1->Sample(uvInterp);
+				}
+				else
+				{
+					const float remap =  Remap(pixelDepth, 0.985f, 1.0f, 0.2f, 1.0f);
+					finalColor = ColorRGB{ remap, remap, remap };
+				}
+			
 				m_pBackBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBackBuffer->format,
 					static_cast<uint8_t>(finalColor.r * 255),
 					static_cast<uint8_t>(finalColor.g * 255),
@@ -281,4 +291,5 @@ Vector2 Renderer::ConvertNDCtoScreen(const Vector3& ndc, int screenWidth, int sc
 	float screenSpaceY = (1.0f - ndc.y) / 2.0f * screenHeight;
 	return Vector2{ screenSpaceX, screenSpaceY };
 }
+
 

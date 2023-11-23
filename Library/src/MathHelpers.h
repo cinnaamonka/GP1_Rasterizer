@@ -57,4 +57,8 @@ namespace dae
 		if (v > 1.f) return 1.f;
 		return v;
 	}
+	inline float Remap(float value, float inputMin, float inputMax, float outputMin, float outputMax)
+	{
+		return outputMin + (value - inputMin) * (outputMax - outputMin) / (inputMax - inputMin);
+	}
 }
