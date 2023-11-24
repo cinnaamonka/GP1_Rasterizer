@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Camera.h"
+#include "DataTypes.h"
 
 struct SDL_Window;
 struct SDL_Surface;
@@ -12,7 +13,7 @@ namespace dae
 {
 	class Texture;
 	struct Mesh;
-	struct Mesh4;
+	struct Mesh4AxisVertex;
 	struct Vertex;
 	struct Vertex_Out;
 	class Timer;
@@ -33,7 +34,7 @@ namespace dae
 		void Render();
 
 		bool SaveBufferToImage() const;
-		void VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh4>& meshes_out) const;
+		void VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh4AxisVertex>& meshes_out) const;
 		Vector2 ConvertNDCtoScreen(const Vector3& ndc, int screenWidth, int screenHeight)const;
 		void ToggleShadows() { m_FinalColorEnabled = !m_FinalColorEnabled; };
 
@@ -51,10 +52,11 @@ namespace dae
 		bool m_FinalColorEnabled;
 
 		std::vector<Mesh> m_Meshes;
+		std::vector<Mesh4AxisVertex> meshes_screen;
 
-		
+		Mesh m_Vehicle{};
 
-		Texture* m_Texture1;
+		Texture* m_TextureVehicle;
 
 		int m_Width{};
 		int m_Height{};

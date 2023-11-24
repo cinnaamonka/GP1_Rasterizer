@@ -26,22 +26,27 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	//Initialize Camera
 
 	m_AspectRatio = static_cast<float>(m_Width) / static_cast<float>(m_Height);
-	m_Camera.Initialize(m_AspectRatio, 60.f, { .0f,.0f,-10.f });
+	m_Camera.Initialize(m_AspectRatio, 60.f, { .0f,.0f,-30.f });
 	m_pDepthBuffer.resize(m_Height * m_Width);
 	m_FinalColorEnabled = true;
 
 	//m_Texture1 = Texture::LoadFromFile("Resources/uv_grid_2.png");
-	m_Texture1 = Texture::LoadFromFile("Resources/vehicle_diffuse.png");
+	m_TextureVehicle = Texture::LoadFromFile("Resources/vehicle_diffuse.png");
+	
+	Utils::ParseOBJ("Resources/vehicle.obj", m_Vehicle.vertices, m_Vehicle.indices);
+	m_Vehicle.primitiveTopology = PrimitiveTopology::TriangleList;
 }
 
 Renderer::~Renderer()
 {
-	delete m_Texture1;
+	delete m_TextureVehicle;
 }
 
 void Renderer::Update(Timer* pTimer)
 {
 	m_Camera.Update(pTimer);
+	m_Vehicle.RotateY(35 * TO_RADIANS);
+
 }
 
 void Renderer::Render()
@@ -97,18 +102,13 @@ void Renderer::Render()
 		}
 	};*/
 
-	Mesh vehicle{};
-	Utils::ParseOBJ("Resources/vehicle.obj", vehicle.vertices, vehicle.indices);
-	vehicle.primitiveTopology = PrimitiveTopology::TriangleList;
-	
-
-	std::vector<Mesh4> meshes_screen;
-	m_Meshes.push_back(vehicle);
 	/*m_Meshes.push_back(meshes_worldList[0]);
-	m_Meshes.push_back(meshes_worldStrip[0]);*/
-	
+m_Meshes.push_back(meshes_worldStrip[0]);*/
 
+	
+	m_Meshes.push_back(m_Vehicle);
 	VertexTransformationFunction(m_Meshes, meshes_screen);
+
 
 	SDL_FillRect(m_pBackBuffer, NULL, SDL_MapRGB(m_pBackBuffer->format,
 		static_cast<uint8_t>(100.f * 255),
@@ -128,7 +128,6 @@ void Renderer::Render()
 	{
 		if (m_Meshes[0].primitiveTopology == PrimitiveTopology::TriangleList)
 		{
-			const auto& meshes_screen1 = meshes_screen;
 			currentTriangle =
 			{
 				meshes_screen[0].vertices_out[m_Meshes[0].indices[i]],
@@ -219,7 +218,7 @@ void Renderer::Render()
 				float interpolatedDepth = 1 /
 					(W0 / currentTriangle.vertex0.position.w +
 						W1 / currentTriangle.vertex1.position.w +
-						W2 /currentTriangle.vertex2.position.w);
+						W2 / currentTriangle.vertex2.position.w);
 
 				//interpolate through the depth values
 
@@ -231,7 +230,7 @@ void Renderer::Render()
 
 				if (m_FinalColorEnabled)
 				{
-					finalColor = m_Texture1->Sample(uvInterp);
+					finalColor = m_TextureVehicle->Sample(uvInterp);
 				}
 				else
 				{
@@ -251,11 +250,12 @@ void Renderer::Render()
 	SDL_UpdateWindowSurface(m_pWindow);
 }
 
-void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh4>& meshes_out) const
+void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, std::vector<Mesh4AxisVertex>& meshes_out) const
 {
 	for (int i = 0; i < meshes_in.size(); i++)
 	{
 		std::vector<Vertex_Out> vertices_out;
+		Mesh4AxisVertex newMesh;
 
 		for (const auto& vertex : meshes_in[i].vertices)
 		{
@@ -279,7 +279,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, 
 			newVertex.uv = vertex.uv;
 			vertices_out.push_back(newVertex);
 		}
-		const Mesh4 newMesh
+		newMesh = 
 		{
 			vertices_out,
 			meshes_in[i].indices,
@@ -289,6 +289,7 @@ void Renderer::VertexTransformationFunction(const std::vector<Mesh>& meshes_in, 
 
 		meshes_out.push_back(newMesh);
 	}
+	
 }
 bool Renderer::SaveBufferToImage() const
 {

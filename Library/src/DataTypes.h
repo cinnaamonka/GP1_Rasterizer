@@ -43,19 +43,35 @@ namespace dae
 
 	struct Mesh
 	{
-		std::vector<Vertex_Out> vertices_out{};
+		std::vector<Vertex> vertices{};
 		std::vector<uint32_t> indices{};
 		PrimitiveTopology primitiveTopology{ PrimitiveTopology::TriangleStrip };
-
-		std::vector<Vertex> vertices{};
+		
 		Matrix worldMatrix{};
+
+		void RotateY(float yaw)
+		{
+			worldMatrix = Matrix::CreateRotationY(yaw);
+
+			for (Vertex& vertex : vertices)
+				vertex.position = worldMatrix.TransformPoint(vertex.position);
+		}
 	};
-	struct Mesh4
+
+	struct Mesh4AxisVertex
 	{
 		std::vector<Vertex_Out> vertices_out{};
 		std::vector<uint32_t> indices{};
 		PrimitiveTopology primitiveTopology{ PrimitiveTopology::TriangleStrip };
 
 		Matrix worldMatrix{};
+
+		void RotateY(float yaw)
+		{
+			worldMatrix = Matrix::CreateRotationY(yaw);
+
+			for (Vertex_Out& vertex : vertices_out)
+				vertex.position = worldMatrix.TransformPoint(vertex.position);
+		}
 	};
 }
